@@ -365,23 +365,43 @@ def register():
       return_H_coe_matrix=sp.Matrix(matrix_li)
       return return_H_coe_matrix
 
-    def rep_coe_to_gen_coe(self,repcoeli):
-      repcoematrix=sp.Matrix([repcoeli])
-      return (repcoematrix*self.rep_to_gen_matrix().inv()).tolist()[0]
+    def rep_coe_to_gen_coe(self, repcoelist):
+      repcoematrix = sp.Matrix([repcoelist])
+      if repcoematrix == sp.Matrix([[0]]):
+        direct_sum = self.direct_sum()
+        return_gen_coe_list = [0] * direct_sum
+      else:
+        try:
+          return_gen_coe_list = (repcoematrix * self.rep_to_gen_matrix().inv()).tolist()[0]
+        except:
+          return_gen_coe_list = []
+      return return_gen_coe_list
 
-    def gen_coe_to_rep_coe(self,gencoeli):
-      gencoematrix=sp.Matrix([gencoeli])
-      return (gencoematrix*self.rep_to_gen_matrix()).tolist()[0]
+    def gen_coe_to_rep_coe(self, gencoelist):
+      if gencoelist != []:
+        gencoematrix = sp.Matrix([gencoelist])
+        return_rep_coe_list = (gencoematrix * self.rep_to_gen_matrix()).tolist()[0]
+      else:
+        return_rep_coe_list = []
+      return return_rep_coe_list
 
-    def mod_gen_coe_list(self,gencoe):
-      order_li=self.order_list()
-      d_sum=self.direct_sum()
-      def mod_coe(i):
-        oi,gi=order_li[i],gencoe[i]
-        if oi==inf: return gi
-        elif gi%oi>oi//2: return gi%oi-oi
-        else: return gi%oi
-      return [mod_coe(i) for i in range(d_sum)]
+    def mod_gen_coe_list(self, gencoe):
+      if gencoe != []:
+        order_list = self.order_list()
+        direct_sum = self.direct_sum()
+        def mod_coe(i):
+          if order_list[i] == 0:
+            return gencoe[i]
+          elif order_list[i] == inf:
+            return gencoe[i]
+          elif gencoe[i] % order_list[i] > order_list[i] /2:
+            return gencoe[i] % order_list[i] - order_list[i]
+          else:
+            return gencoe[i] % order_list[i]
+        return_mod_gen_coe_list = [mod_coe(i) for i in range(direct_sum)]
+      else:
+        return_mod_gen_coe_list = []
+      return return_mod_gen_coe_list
 
     def gen_P_coe(self,id):
       res=[]
@@ -527,4 +547,4 @@ def register():
     , table_arrow=table_arrow, table_image=table_image, table_ref=table_ref )
 
 if __name__=="__main__":
-  app.run(debug=True,host='0,0,0,0',port=5001)
+  app.run(debug=True)
