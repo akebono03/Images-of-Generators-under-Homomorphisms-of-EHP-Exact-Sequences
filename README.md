@@ -6,7 +6,7 @@ One of the basic tool is the EHP-sequence.
 E is the suspension homomorphism.  
 H is the generalized Hopf invariant.  
 P is essentially the Whitehead product.  
-This application gives images of their homomorphisms.  
+This application give images of their homomorphisms.  
 
 [T] H. Toda: Composition methods in homotopy groups of spheres, Ann. Math.  Studies, No. 49, Princeton, 1962.  
 [MT] M. Mimura and H. Toda: The (n+20)-th homotopy groups of n-spheres, J. Math. Kyoto Univ., 3(1963), 37-58.  
