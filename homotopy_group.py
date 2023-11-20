@@ -146,50 +146,108 @@ def register():
       return_group_tex = ' \oplus '.join(group_tex_list)
       return return_group_tex
 
-    def el_tex(self, el_list): # 表示元の tex 表示を与えるメソッド
-      el_dim_list = self.el_dim_list(el_list)
-      tex = ''
-      sq_count = 1
-      for (i, elem) in enumerate(el_list):
-        gen_query = f'select * from gen where id = {elem}'
+    def el_tex(self,el_li):
+#表示元のtex表示を与えるメソッド
+      el_dim_li= self.el_dim_list(el_li)
+      res=''
+      sq_cnt=1
+      for i,elem in enumerate(el_li):
+        gen_query=f'select*from gen where id="{elem}"'
         for row in c.execute(gen_query):
-          if row['kinds'] == 0:
-            if el_dim_list[i] < row['n']: # row[5] = n 
-              tex = tex + '{' + row['latex'] + f'_{ {el_dim_list[i]} }' + '(Not Defined)}'
-            elif i==0 or el_list[i-1] != el_list[i]: # 一番最初か、前の id と違うとき、カウントを１にする。
-              sq_count = 1
-            else: # 前の id と同じときにカウントを＋１
-              sq_count = sq_count + 1 
-            if i == len(el_list)-1: # 最後のときに tex を追加
-              if el_dim_list[i] >= row['n']:
-                if '{3,' in row['latex']:
-                  tex = tex + '{' + row['latex'] + f'{el_dim_list[i-sq_count+1]}' + '} }'
-                else:
-                  tex = tex + '{' + row['latex'] + f'_{ {el_dim_list[i-sq_count+1]} }' + '}'
-                if sq_count >=2:
-                  tex = tex.removesuffix('}') + f'^{ {sq_count} }' + '}'
-            elif el_list[i] != el_list[i+1]: # 次の id と違うときに tex を追加
-              if el_dim_list[i] >= row['n']:
-                if '{3,' in row['latex']:
-                  tex = tex + '{' + row['latex'] + f'{el_dim_list[i-sq_count+1]}' + '} }'
-                else:
-                  tex = tex + '{' + row['latex'] + f'_{ {el_dim_list[i-sq_count+1]} }' + '}'
-                if sq_count >=2: # カウントの数をべきにする。
-                  tex = tex.removesuffix('}') + f'^{ {sq_count} }' + '}'
-            # 次の id と同じ場合は何もしない
-          elif el_dim_list[i] < row['n']:
-            tex = tex + '{' + 'E' + f"^{ {el_dim_list[i] - row['n']} }" + row['latex'] + '(Not Defined)}'
-          elif el_dim_list[i] == row['n']:
-            tex = tex + '{' + row['latex'] + '}'
-          elif el_dim_list[i] == row['n'] + 1:
-            tex = tex + '{' + 'E ' + row['latex'] + '}'
+          if row['kinds']==0:
+            if el_dim_li[i]< row['n']:res+='{'+row['latex'] +f'_{ {el_dim_li[i]} }'+'(Not Defined)}'
+            elif i==0 or el_li[i-1]!=el_li[i]:sq_cnt=1
+#一番最初か、前のidと違うとき、カウントを１にする。
+            else:sq_cnt+=1
+#前のidと同じときにカウントを＋１
+            if i== len(el_li)-1:
+#最後のときにtexを追加
+              if el_dim_li[i] >=row['n']:
+                if '{3,' in row['latex'] or '{4,' in row['latex']:res+='{' +row['latex'] +f'{el_dim_li[i-sq_cnt+1]}' +'} }'
+                else:res+='{' +row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
+                if sq_cnt>=2:res= res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+            elif el_li[i]!= el_li[i+1]:
+#次のidと違うときにtexを追加
+              if el_dim_li[i] >=row['n']:
+                if '{3,' in row['latex'] or '{4,' in row['latex']:res+='{' +row['latex'] +f'{el_dim_li[i-sq_cnt+1]}'+'} }'
+                else:res+='{'+ row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
+                if sq_cnt>=2:res= res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+#カウントの数をべきにする。
+#次のidと同じ場合は何もしない
+          elif el_dim_li[i] <row['n']:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)}'
+          elif el_dim_li[i] ==row['n']:res+='{' +row['latex']+'}'
+          elif el_dim_li[i]== row['n']+1:res+='{'+' E '+row['latex']+'}'
+          else:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'}'
+      if 0 in el_li:res='0'
+      return res
+
+    def el_coe_tex(self,elli,el_coeli=[1]*6):
+      el_li,el_coe_li=self.delete_iota(elli,el_coeli)
+      el_dim_li=self.el_dim_list(el_li)
+      len_el_li=len(el_li)
+      res=''
+      sq_cnt=1
+      for i,elem in enumerate(el_li):
+        gen_query=f'select*from gen where id="{elem}"'
+        for row in c.execute(gen_query):
+          if row['kinds']==0:
+            if el_dim_li[i]<row['n']:
+              if el_coe_li[i]==1:res+='{'+row['latex']+f'_{ {el_dim_li[i]} }'+'(Not Defineda)}'
+              elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i]} }'+'(Not Defineda)}'
+              else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i]} }'+'(Not Defineda)})'
+            elif i==0 or el_li[i-1]!=el_li[i] or (el_li[i-1]==el_li[i] and el_coe_li[i]!=1):sq_cnt=1
+#一番最初か、前のidと違うとき、カウントを１にする。
+            else:sq_cnt+=1;el_coe_li[i]=el_coe_li[i-1]
+#前のidと同じときにカウントを＋1
+            if i==len_el_li-1:
+#最後のときにtexを追加
+              # if el_dim_li[i]>=row['n']:
+              if el_dim_li[i]<row['n']:continue
+              if '{3,' in row['latex'] or '{4,' in row['latex']:
+                if el_coe_li[i]==1:res+='{'+row['latex']+f'{el_dim_li[i-sq_cnt+1]}'+'} }'
+                elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+f'{el_dim_li[i-sq_cnt+1]}'+'} }'
+                else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'{el_dim_li[i-sq_cnt+1]}'+'} })'
+              else:
+                if el_coe_li[i]==1:res+='{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
+                elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
+                else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'})'
+              if sq_cnt<2:continue
+              if res[-1]==')':res=res.removesuffix('})')+f'^{ {sq_cnt} }'+'})'
+              else:res=res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+            elif el_li[i]!=el_li[i+1] or (el_li[i]==el_li[i+1] and el_coe_li[i+1]!=1):
+#次のidと違うときにtexを追加
+              if el_dim_li[i]<row['n']:continue
+              if '{3,' in row['latex'] or '{4,' in row['latex']:
+                if el_coe_li[i]==1:res+='{'+row['latex']+f'{el_dim_li[i-sq_cnt+1]}'+'} }'
+                elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+f'{el_dim_li[i-sq_cnt+1]}'+'} }'
+                else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'{el_dim_li[i-sq_cnt+1]}'+'} })'
+              else:
+                if el_coe_li[i]==1:res+='{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
+                elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
+                else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'})'
+              if sq_cnt<2:continue
+# カウントの数をべきにする。
+              if res[-1]==')':res=res.removesuffix('})')+f'^{ {sq_cnt} }'+'})'
+              else:res=res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+#次のidと同じ場合は何もしない
+          elif el_dim_li[i]<row['n']:
+            if el_coe_li[i]==1:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)}'
+            elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)}'
+            else:res+='('+f'{el_coe_li[i]}'+'{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)})'
+          elif el_dim_li[i]==row['n']:
+            if el_coe_li[i]==1:res+='{'+row['latex']+'}'
+            elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+'}'
+            else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+'})'
+          elif el_dim_li[i]==row['n']+1:
+            if el_coe_li[i]==1:res+='{'+' E '+row['latex']+'}'
+            elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+' E '+row['latex']+'}'
+            else:res+='('+f'{el_coe_li[i]}'+'{'+' E '+row['latex']+'})'
           else:
-            tex = tex + '{' + 'E' + f"^{ {el_dim_list[i] - row['n']} }" + row['latex'] + '}'
+            if el_coe_li[i]==1:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'}'
+            elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'}'
+            else:res+='('+f'{el_coe_li[i]}'+'{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'})'
+      return res
 
-      if 0 in el_list:
-        tex = '0'
-
-      return tex
 
     def rep_linear_tex(self, coe, totalcoe=1):
       rep_coe = [c * totalcoe for c in coe]
@@ -208,45 +266,6 @@ def register():
         rep_lin = ''
       return rep_lin
 
-    # def rep_linear_tex(self, coe, totalcoe=1):
-    #   # print(f'coe = {coe}')
-    #   # rep_coe = list(map(lambda x: x*totalcoe, coe))
-    #   rep_coe = [c * totalcoe for c in coe]
-    #   # print('rep_linear_tex', coe, rep_coe, totalcoe)
-    #   order_list = self.order_list()
-    #   direct_sum = self.direct_sum()
-    #   # print(f'rep_coe = {rep_coe}')
-    #   if order_list == [0]:
-    #     rep_lin = '0'
-    #   elif rep_coe != []:
-    #     symbol_list = ['x00', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11']
-    #     X = sp.Matrix([sp.Symbol(symbol_list[i]) for i in range(direct_sum)])
-    #     # X = sp.Matrix([sp.Symbol(self.el_tex(self.rep_list(i))) for i in range(direct_sum)])
-    #     # print(f'{coe}, rep_coe = {rep_coe}')
-
-    #     # def mod_coe(i):
-    #     #   # print(f'i = {i}')
-    #     #   try:
-    #     #     if order_list[i] == inf:
-    #     #       return rep_coe[i]
-    #     #     elif rep_coe[i] % order_list[i] > order_list[i] /2:
-    #     #       return rep_coe[i] % order_list[i] - order_list[i]
-    #     #     else:
-    #     #       return rep_coe[i] % order_list[i]
-    #     #   except:# IndexError:
-    #     #     return rep_coe[i]# i
-
-    #     # print(f'{self.n}, {self.k}, direct_sum = {direct_sum}')
-    #     A = sp.Matrix([rep_coe[i] for i in range(direct_sum)])
-    #     # A = sp.Matrix([mod_coe(i) for i in range(direct_sum)])
-    #     # print(A)
-    #     rep_lin = str(Dot(X, A)).replace('*x', 'x')
-    #     for i in range(direct_sum):
-    #       rep_lin = rep_lin.replace(symbol_list[i], self.el_tex(self.rep_list(i)))
-    #   else:
-    #     rep_lin = ''
-    #   return rep_lin
-
     def rep_to_gen_matrix(self):
       matrix_list = []
       direct_sum = self.direct_sum()
@@ -260,44 +279,6 @@ def register():
         pass
       return_matrix = sp.Matrix(matrix_list)
       return return_matrix
-
-    # def gen_linear_tex(self, coe, totalcoe=1):
-    #   # print(f'coe = {coe}')
-    #   # rep_coe = list(map(lambda x: x*totalcoe, coe))
-    #   rep_coe = [c * totalcoe for c in coe]
-    #   # print('rep_linear_tex', coe, rep_coe, totalcoe)
-    #   order_list = self.order_list()
-    #   direct_sum = self.direct_sum()
-    #   # print(f'rep_coe = {rep_coe}')
-    #   if order_list == [0]:
-    #     rep_lin = '0'
-    #   elif rep_coe != []:
-    #     symbol_list = ['x00', 'x01', 'x02', 'x03', 'x04', 'x05', 'x06', 'x07', 'x08', 'x09', 'x10', 'x11']
-    #     X = sp.Matrix([sp.Symbol(symbol_list[i]) for i in range(direct_sum)])
-    #     # X = sp.Matrix([sp.Symbol(self.el_tex(self.rep_list(i))) for i in range(direct_sum)])
-    #     # print(f'{coe}, rep_coe = {rep_coe}')
-    #     def mod_coe(i):
-    #       # print(f'i = {i}')
-    #       try:
-    #         if order_list[i] == inf:
-    #           return rep_coe[i]
-    #         elif rep_coe[i] % order_list[i] > order_list[i] /2:
-    #           return rep_coe[i] % order_list[i] - order_list[i]
-    #         else:
-    #           return rep_coe[i] % order_list[i]
-    #       except:# IndexError:
-    #         return rep_coe[i]# i
-    #     # print(f'{self.n}, {self.k}, direct_sum = {direct_sum}')
-    #     A = sp.Matrix([mod_coe(i) for i in range(direct_sum)])
-    #     B = self.rep_to_gen_matrix()
-    #     C = A * B
-    #     print(f'A = {A, B, C}')
-    #     rep_lin = str(Dot(X, C)).replace('*x', 'x')
-    #     for i in range(direct_sum):
-    #       rep_lin = rep_lin.replace(symbol_list[i], self.el_tex(self.rep_list(i)))
-    #   else:
-    #     rep_lin = ''
-    #   return rep_lin
 
     def P_image_tex(self, id):
       if self.n % 2 == 1:
@@ -388,36 +369,6 @@ def register():
           return_gen_coe_list = []
       return return_gen_coe_list
 
-    # def rep_coe_to_gen_coe(self, repcoelist):
-    #   # print(f'repcoelist = {repcoelist}')
-    #   repcoematrix = sp.Matrix([repcoelist])
-    #   # print(f'rep_to_gen_matrix = {self.rep_to_gen_matrix()}')
-    #   if repcoematrix == sp.Matrix([[0]]):
-    #     direct_sum = self.direct_sum()
-    #     return_gen_coe_list = [0] * direct_sum
-    #   else:
-    #     # print('aaaa')
-    #     try:
-    #       return_gen_coe_list = (repcoematrix * self.rep_to_gen_matrix().inv()).tolist()[0]
-    #     except:
-    #       return_gen_coe_list = []
-    #   # if repcoelist != [] or repcoelist != [0]:
-    #   #   print(f'repcoelist = {repcoelist}')
-    #   #   repcoematrix = sp.Matrix([repcoelist])
-    #   #   print(f'rep_to_gen_matrix = {self.rep_to_gen_matrix()}')
-    #   #   if repcoematrix == sp.Matrix([[0]]):
-    #   #     direct_sum = self.direct_sum()
-    #   #     return_gen_coe_list = [0] * direct_sum
-    #   #   else:
-    #   #     print('aaaa')
-    #   #     try:
-    #   #       return_gen_coe_list = (repcoematrix * self.rep_to_gen_matrix().inv()).tolist()[0]
-    #   #     except:
-    #   #       return_gen_coe_list = []
-    #   # else:
-    #   #   return_gen_coe_list = []
-    #   return return_gen_coe_list
-
     def gen_coe_to_rep_coe(self, gencoelist):
       if gencoelist != []:
         gencoematrix = sp.Matrix([gencoelist])
@@ -443,24 +394,6 @@ def register():
       else:
         return_mod_gen_coe_list = []
       return return_mod_gen_coe_list
-
-    # def P_coe(self, id):
-    #   int_list = []
-    #   ref_tex = ''
-    #   order_list = self.order_list()
-    #   try:
-    #     if order_list == [0] or order_list == []:
-    #       int_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    #     else:
-    #       queryid = f'select * from sphere where n = {self.n} and k = {self.k} and id = {id}'
-    #       for row in c.execute(queryid):
-    #         if row['P_coe'] is not None:
-    #           int_list = list(map(int, row['P_coe'].split()))
-    #           ref_tex = row['P']  
-    #   except:
-    #     pass
-    #   del int_list[HomotopyGroup((self.n - 1) / 2, (self.n + 2 * self.k - 3) / 2).direct_sum():] 
-    #   return int_list, ref_tex
 
     def gen_P_coe(self, id):
       int_list = []
@@ -488,18 +421,6 @@ def register():
       del int_list[HomotopyGroup((self.n - 1) / 2, (self.n + 2 * self.k - 3) / 2).direct_sum():] 
       return int_list, ref_tex
 
-    # def E_coe(self, id):
-    #   int_list = []
-    #   ref = []
-    #   for row in c.execute(self.query_id(id)):
-    #     if row['E_coe'] is not None:
-    #       int_list = list(map(int, row['E_coe'].split()))
-    #       ref = row['E'] #if row['E'] is not None else '' 
-    #     hg = HomotopyGroup(self.n+1, self.k) if self.k+2 >= self.n \
-    #       else HomotopyGroup(self.k+2, self.k)
-    #     del int_list[hg.direct_sum():]
-    #   return int_list, ref
-
     def gen_E_coe(self, id):
       ref = []
       self_direct_sum = self.direct_sum()
@@ -517,50 +438,6 @@ def register():
           else HomotopyGroup(self.k+2, self.k)
         del return_int_list[hg.direct_sum():]
       return return_int_list, ref
-
-    # def gen_E_coe(self, id):
-    #   # int_list = []
-    #   ref = []
-    #   self_direct_sum = self.direct_sum()
-    #   for row in c.execute(self.query_id(id)):
-    #     if row['E_coe'] is not None:
-    #       # int_list = list(map(int, row['E_coe'].split())).
-    #       # E_coe_list = list(map(int, row['E_coe'].split()))
-    #       # if len(E_coe_list) == 0:
-    #       #   print(f'bbbbb, {E_coe_list}')
-          
-    #       gen_int_list = list(map(int, row['gen_coe'].split()))
-    #       del gen_int_list[self_direct_sum:]
-    #       # print(f'gen_int_list = {gen_int_list}')
-    #       gen_matrix = sp.Matrix(gen_int_list)
-    #       self_E_coe_matrix = self.E_coe_matrix()
-    #       print(f'gen_matrix = {gen_matrix.transpose()}')
-    #       print(f'self_E_coe_matrix = {id, self_E_coe_matrix}')
-    #       # print((gen_matrix.transpose()*self_E_coe_matrix).tolist())
-    #       return_int_list = (gen_matrix.transpose()*self_E_coe_matrix).tolist()[0]
-    #       ref = row['E'] #if row['E'] is not None else '' 
-    #     else:
-    #       return_int_list = []
-    #     hg = HomotopyGroup(self.n+1, self.k) if self.k+2 >= self.n \
-    #       else HomotopyGroup(self.k+2, self.k)
-    #     # print(f'int_list = {int_list}')
-    #     del return_int_list[hg.direct_sum():]
-    #   # print(self.n+1, self.k, hg.direct_sum(), int_list)
-    #   return return_int_list, ref
-
-    # def H_coe(self, id):
-    #   int_list = []
-    #   ref_tex = ''
-    #   if self.k + 2 >= self.n:
-    #     for row in c.execute(self.query_id(id)):
-    #       if row['H_coe'] is not None:
-    #         int_list = list(map(int, row['H_coe'].split()))
-    #         ref_tex = row['H']
-    #   else:
-    #     int_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    #   del int_list[HomotopyGroup(2 * self.n - 1, self.k - self.n + 1).direct_sum():] 
-    #   # リストの長さを direct_sum の個数にする
-    #   return int_list, ref_tex
 
     def gen_H_coe(self, id):
       int_list = []
@@ -583,17 +460,6 @@ def register():
         int_list = [0] * 12
       del int_list[HomotopyGroup(2 * self.n - 1, self.k - self.n + 1).direct_sum():] 
       return int_list, ref_tex
-
-    # def mod_gen_coe_list(self, gencoe):
-    #   def mod_coe(i):
-    #     if self.order_list()[i] == inf:
-    #       return gencoe[i]
-    #     elif gencoe[i] % self.order_list()[i] > self.order_list()[i] /2:
-    #       return gencoe[i] % self.order_list()[i] - self.order_list()[i]
-    #     else:
-    #       return gencoe[i] % self.order_list()[i]
-    #   return_mod_gen_coe_list = [mod_coe(i) for i in range(self.direct_sum())]
-    #   return return_mod_gen_coe_list
 
   nn = [n*2-1, n-1, n, n*2-1, n-1]
   kk = [k-n+2, k, k, k-n+1, k-1]
@@ -640,22 +506,7 @@ def register():
       table_gen[i].append(hg[i].rep_linear_tex(hg[i].gen_coe_list(j)))
       if i < 4:
         table_arrow[i].append('\longrightarrow')
-  
-  # print(hg[2].H_coe(1)[0], hg[3].rep_coe_to_gen_coe(hg[2].H_coe(1)[0]))
-  # print(hg[2].gen_H_coe(1)[0])
-  # print('aaa')
-  # print(hg[0].gen_P_coe(0)[0],hg[1].gen_E_coe(0)[0],hg[2].gen_H_coe(0)[0],hg[3].gen_P_coe(0)[0])
 
-  # table_image[0] = [hg[1].rep_linear_tex(hg[0].gen_P_coe(j)[0]) 
-  #   for j in range(hg[0].direct_sum())]
-  # table_image[1] = [hg[2].rep_linear_tex(hg[2].rep_coe_to_gen_coe(hg[1].gen_E_coe(j)[0])) 
-  #   for j in range(hg[1].direct_sum())]
-  # table_image[2] = [hg[3].rep_linear_tex(hg[2].gen_H_coe(j)[0]) 
-  #   for j in range(hg[2].direct_sum())]
-  # table_image[3] = [hg[4].rep_linear_tex(hg[3].gen_P_coe(j)[0]) 
-  #   for j in range(hg[3].direct_sum())]
-
-  # print(hg[1].gen_E_coe(1)[0], hg[2].rep_coe_to_gen_coe(hg[1].gen_E_coe(1)[0]))
   table_image[0] = [hg[1].rep_linear_tex(hg[1].gen_coe_to_rep_coe(hg[1].mod_gen_coe_list(hg[1].rep_coe_to_gen_coe(hg[0].gen_P_coe(j)[0]))))
     for j in range(hg[0].direct_sum())]
   if nn[i] <= kk[i] + 2:
@@ -667,15 +518,6 @@ def register():
     for j in range(hg[2].direct_sum())]
   table_image[3] = [hg[4].rep_linear_tex(hg[4].gen_coe_to_rep_coe(hg[4].mod_gen_coe_list(hg[4].rep_coe_to_gen_coe(hg[3].gen_P_coe(j)[0]))))
     for j in range(hg[3].direct_sum())]
-
-  # table_image[0] = [hg[1].rep_linear_tex(hg[0].P_coe(j)[0]) 
-  #   for j in range(hg[0].direct_sum())]
-  # table_image[1] = [hg[2].rep_linear_tex(hg[1].E_coe(j)[0]) 
-  #   for j in range(hg[1].direct_sum())]
-  # table_image[2] = [hg[3].rep_linear_tex(hg[2].H_coe(j)[0]) 
-  #   for j in range(hg[2].direct_sum())]
-  # table_image[3] = [hg[4].rep_linear_tex(hg[3].P_coe(j)[0]) 
-  #   for j in range(hg[3].direct_sum())]
 
   table_group = [[], [], [], [], []]
   for i in range(5):
@@ -713,7 +555,5 @@ def register():
     , table_group=table_group, table_gen=table_gen \
     , table_arrow=table_arrow, table_image=table_image, table_ref=table_ref )
 
-
-## おまじない
 if __name__ == "__main__":
   app.run(debug=True)
