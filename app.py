@@ -527,4 +527,4 @@ def register():
     , table_arrow=table_arrow, table_image=table_image, table_ref=table_ref )
 
 if __name__=="__main__":
-  app.run(debug=True)
+  app.run(debug=True,host='0,0,0,0',port=5001)
