@@ -36,9 +36,9 @@ def register():
 
   db_name='sphere.db'
   conn=sqlite3.connect(db_name)
-  df=pd.read_csv('.\sphere.csv')
+  df=pd.read_csv('./sphere.csv')
   df.to_sql('sphere',conn,if_exists='replace')
-  df=pd.read_csv('.\HyoujiGen.csv')
+  df=pd.read_csv('./HyoujiGen.csv')
   df.to_sql('gen',conn,if_exists='replace')
   c=conn.cursor()
 
