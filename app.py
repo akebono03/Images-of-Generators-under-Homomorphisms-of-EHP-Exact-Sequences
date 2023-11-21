@@ -178,7 +178,7 @@ def register():
               if el_dim_li[i] >=row['n']:
                 if '{3,' in row['latex'] or '{4,' in row['latex']:res+='{' +row['latex'] +f'{el_dim_li[i-sq_cnt+1]}'+'} }'
                 else:res+='{'+ row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
-                if sq_cnt>=2:res= res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+                if sq_cnt>=2: res= res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
 #カウントの数をべきにする。
 #次のidと同じ場合は何もしない
           elif el_dim_li[i] <row['n']:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)}'
