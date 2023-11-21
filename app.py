@@ -172,14 +172,13 @@ def register():
               if el_dim_li[i] >=row['n']:
                 if '{3,' in row['latex'] or '{4,' in row['latex']:res+='{' +row['latex'] +f'{el_dim_li[i-sq_cnt+1]}' +'} }'
                 else:res+='{' +row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
-                # if sq_cnt>=2:res= res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
                 if sq_cnt>=2:res= res[:-1]+f'^{ {sq_cnt} }'+'}'
             elif el_li[i]!= el_li[i+1]:
 #次のidと違うときにtexを追加
               if el_dim_li[i] >=row['n']:
                 if '{3,' in row['latex'] or '{4,' in row['latex']:res+='{' +row['latex'] +f'{el_dim_li[i-sq_cnt+1]}'+'} }'
                 else:res+='{'+ row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
-                if sq_cnt>=2: res= res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+                if sq_cnt>=2: res= res[:-1]+f'^{ {sq_cnt} }'+'}'
 #カウントの数をべきにする。
 #次のidと同じ場合は何もしない
           elif el_dim_li[i] <row['n']:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)}'
@@ -220,8 +219,8 @@ def register():
                 elif len_el_li==1:res+=f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'}'
                 else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'})'
               if sq_cnt<2:continue
-              if res[-1]==')':res=res.removesuffix('})')+f'^{ {sq_cnt} }'+'})'
-              else:res=res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+              if res[-1]==')':res=res[:-2]+f'^{ {sq_cnt} }'+'})'
+              else:res=res[:-1]+f'^{ {sq_cnt} }'+'}'
             elif el_li[i]!=el_li[i+1] or (el_li[i]==el_li[i+1] and el_coe_li[i+1]!=1):
 #次のidと違うときにtexを追加
               if el_dim_li[i]<row['n']:continue
@@ -235,8 +234,8 @@ def register():
                 else:res+='('+f'{el_coe_li[i]}'+'{'+row['latex']+f'_{ {el_dim_li[i-sq_cnt+1]} }'+'})'
               if sq_cnt<2:continue
 # カウントの数をべきにする。
-              if res[-1]==')':res=res.removesuffix('})')+f'^{ {sq_cnt} }'+'})'
-              else:res=res.removesuffix('}')+f'^{ {sq_cnt} }'+'}'
+              if res[-1]==')':res=res[:-2]+f'^{ {sq_cnt} }'+'})'
+              else:res=res[:-1]+f'^{ {sq_cnt} }'+'}'
 #次のidと同じ場合は何もしない
           elif el_dim_li[i]<row['n']:
             if el_coe_li[i]==1:res+='{'+' E '+f"^{ {el_dim_li[i]-row['n']} }"+row['latex']+'(Not Defined)}'
